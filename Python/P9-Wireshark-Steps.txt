@@ -1,0 +1,23 @@
+PRACTICAL 9 - Packet Format Analysis using Wireshark
+No code required - capture and read the headers.
+
+STEPS
+1. Open Wireshark > select interface (Ethernet / Wi-Fi / Loopback) > start capture
+2. Generate traffic:  ping 8.8.8.8   or run the P8 socket programs
+3. Stop capture, click a packet, expand the layers in the middle pane:
+     Ethernet II -> Source MAC, Destination MAC, Type
+     IPv4        -> Version, Header Length, TTL, Protocol, Source IP, Destination IP
+     TCP         -> Source Port, Dest Port, Sequence No, Ack No, Flags, Window Size
+     UDP         -> Source Port, Dest Port, Length, Checksum
+4. File > Save As > wired_network.pcap
+
+DISPLAY FILTERS
+  ip    tcp    udp    icmp    ip.addr==192.168.1.5    tcp.port==80
+
+TERMINAL COMMANDS
+  ping <ip>    ifconfig / ipconfig    tracert <ip>    netstat -an    nslookup <site>
+
+OPTIONAL PROGRAM: P9-PacketAnalysis.py
+  Needs:  pip install scapy
+  Needs:  wired_network.pcap saved in the SAME folder
+  Run:    python3 P9-PacketAnalysis.py

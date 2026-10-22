@@ -1,0 +1,52 @@
+PRACTICAL 5 - Topologies (Star, Bus, Mesh) and VLAN Configuration
+Packet Tracer only - no program.
+
+TOPOLOGIES
+  Star : PCs -> Switch
+  Bus  : PCs -> Hub
+  Mesh : every router connected to every other router
+
+DEVICES USED: Switch-PT + PC-PT
+  Switch-PT ports are Fa0/1, Fa1/1, Fa2/1, Fa3/1  (one port per module)
+
+PC IPs (Desktop > IP Configuration), same subnet for all four:
+  PC0 10.10.10.1   PC1 10.10.10.2   PC2 10.10.10.3   PC3 10.10.10.4
+  Subnet mask 255.0.0.0
+
+VLAN CONFIGURATION  (Switch > CLI)
+enable
+configure terminal
+vlan 10
+ name SALES
+exit
+vlan 20
+ name ACCOUNTS
+exit
+interface fastEthernet 0/1
+ switchport mode access
+ switchport access vlan 10
+exit
+interface fastEthernet 1/1
+ switchport mode access
+ switchport access vlan 10
+exit
+interface fastEthernet 2/1
+ switchport mode access
+ switchport access vlan 20
+exit
+interface fastEthernet 3/1
+ switchport mode access
+ switchport access vlan 20
+end
+show vlan brief
+
+TEST
+  PC0 <-> PC1 ping works   (both in VLAN 10)
+  PC0 <-> PC2 ping fails   (different VLANs)
+
+TRUNK - only needed with TWO switches, on the link between them:
+  interface fastEthernet <port>
+   switchport mode trunk
+
+NOTE: if Switch-PT refuses these commands, use a 2960 switch instead
+      (its ports are fa0/1 ... fa0/24).

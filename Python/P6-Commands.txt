@@ -1,0 +1,154 @@
+PRACTICAL 6 - Static Routing, RIP and OSPF Configuration
+Packet Tracer only - no program.
+
+DEVICES: Router-PT (serial ports are Se2/0 and Se3/0), Switch-PT, PC-PT
+
+TOPOLOGY
+  R1 --40.40.40.0-- R2 --50.50.50.0-- R3
+  LANs:  R1 = 10.10.10.0    R2 = 20.20.20.0    R3 = 30.30.30.0
+  Mask 255.0.0.0 everywhere.
+  PCs take .1 and .2, the ROUTER takes .3
+  PC default gateway = its own router, e.g. PC0 and PC1 -> 10.10.10.3
+  clock rate goes ONLY on the DCE end of a serial link.
+
+STEP 1: interface IP addresses
+
+ROUTER 1
+enable
+config t
+interface fastEthernet 0/0
+ ip address 10.10.10.3 255.0.0.0
+ no shutdown
+exit
+interface serial 2/0
+ ip address 40.40.40.1 255.0.0.0
+ clock rate 2000000
+ no shutdown
+end
+show ip interface brief
+
+ROUTER 2  (middle)
+enable
+config t
+interface fastEthernet 0/0
+ ip address 20.20.20.3 255.0.0.0
+ no shutdown
+exit
+interface serial 2/0
+ ip address 40.40.40.2 255.0.0.0
+ no shutdown
+exit
+interface serial 3/0
+ ip address 50.50.50.1 255.0.0.0
+ clock rate 2000000
+ no shutdown
+end
+show ip interface brief
+
+ROUTER 3
+enable
+config t
+interface fastEthernet 0/0
+ ip address 30.30.30.3 255.0.0.0
+ no shutdown
+exit
+interface serial 2/0
+ ip address 50.50.50.2 255.0.0.0
+ no shutdown
+end
+show ip interface brief
+
+a. STATIC ROUTING    ip route <dest network> <mask> <next hop>
+
+ROUTER 1   (everything beyond R1 goes via 40.40.40.2)
+enable
+config t
+ip route 20.0.0.0 255.0.0.0 40.40.40.2
+ip route 30.0.0.0 255.0.0.0 40.40.40.2
+end
+show ip route
+
+ROUTER 2   (left side via 40.40.40.1, right side via 50.50.50.2)
+enable
+config t
+ip route 10.0.0.0 255.0.0.0 40.40.40.1
+ip route 30.0.0.0 255.0.0.0 50.50.50.2
+end
+show ip route
+
+ROUTER 3   (everything beyond R3 goes via 50.50.50.1)
+enable
+config t
+ip route 10.0.0.0 255.0.0.0 50.50.50.1
+ip route 20.0.0.0 255.0.0.0 50.50.50.1
+end
+show ip route
+
+b. RIP    network takes the CLASSFUL address, so 10.0.0.0 not 10.10.10.0
+
+ROUTER 1
+enable
+config t
+router rip
+ version 2
+ network 10.0.0.0
+ network 40.0.0.0
+ no auto-summary
+end
+
+ROUTER 2
+enable
+config t
+router rip
+ version 2
+ network 20.0.0.0
+ network 40.0.0.0
+ network 50.0.0.0
+ no auto-summary
+end
+
+ROUTER 3
+enable
+config t
+router rip
+ version 2
+ network 30.0.0.0
+ network 50.0.0.0
+ no auto-summary
+end
+show ip route
+show ip protocols
+
+c. OSPF    wildcard mask = 255.255.255.255 - subnet mask
+
+ROUTER 1 CLI
+enable
+config t
+router ospf 1
+network 10.10.10.0 0.0.0.255 area 0
+network 40.40.40.0 0.0.0.255 area 0
+end
+
+ROUTER 2 CLI
+enable
+config t
+router ospf 2
+network 20.20.20.0 0.0.0.255 area 0
+network 40.40.40.0 0.0.0.255 area 0
+network 50.50.50.0 0.0.0.255 area 0
+end
+
+ROUTER 3 CLI
+enable
+config t
+router ospf 1
+network 30.30.30.0 0.0.0.255 area 0
+network 50.50.50.0 0.0.0.255 area 0
+end
+show ip route
+show ip ospf neighbor
+
+Save config:  copy running-config startup-config
+
+VIVA NOTE: the OSPF process ID (1, 2) is LOCAL to each router - neighbours
+never compare it. What must match is the AREA and the subnet on the link.
